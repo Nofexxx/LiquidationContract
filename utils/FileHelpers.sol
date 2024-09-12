@@ -14,6 +14,7 @@ contract FileUtilsState {
 }
 
 contract FileWriteUtils is FileUtilsState {
+    ///@dev Write contract address to file, rewrite if exist
     function writeContractAddress(
         uint32 chainId,
         address contractAddress,
