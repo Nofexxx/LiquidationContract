@@ -12,11 +12,8 @@ pragma solidity ^0.8.27;
 
 import {Ownable} from "@openzeppelin/access/Ownable.sol";
 
-/* ====== INTERFACES IMPORTS ====== */
+/* ====== PREREQUISITES ====== */
 
-/* ====== CONTRACTS IMPORTS ====== */
-
-// PREREQUISITES
 // Comments, technical docs and other texts MUST use keywords in format and meaning described in RFC2119
 // https://datatracker.ietf.org/doc/html/rfc2119
 // This standard is used by Ethereum Improvement Proposals (EIP) writers and good devs
