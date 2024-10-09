@@ -43,6 +43,8 @@ contract Standard is Ownable {
 
     /* ======== ERRORS ======== */
 
+    // NOTE: ERRORS and EVENTS CAN be extracted to separate file (e.g. Errors.sol, Events.sol or interface)
+
     // NOTE: It's better to pass value to an error, than not
 
     error NumberTooHigh(uint number);
