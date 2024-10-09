@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.20;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.27;
 
 /* ====== EXTERNAL IMPORTS ====== */
 
@@ -10,7 +10,7 @@ pragma solidity ^0.8.20;
 contract Template {
     /* ======== STATE ======== */
 
-    uint256 public number;
+    uint public number;
 
     /* ======== ERRORS ======== */
 
@@ -20,7 +20,7 @@ contract Template {
 
     /* ======== EXTERNAL/PUBLIC ======== */
 
-    function setNumber(uint256 newNumber) external {
+    function setNumber(uint newNumber) external {
         number = newNumber;
     }
 
