@@ -10,8 +10,6 @@ pragma solidity ^0.8.27;
 //       1. Execute `forge re` ("re" - alias for remapping)
 //       2. Reload VSCode for Solidity extensions to pull new dependencies
 
-import {Ownable} from "@openzeppelin/access/Ownable.sol";
-
 /* ====== PREREQUISITES ====== */
 
 // Comments, technical docs and other texts MUST use keywords in format and meaning described in RFC2119
@@ -21,7 +19,7 @@ import {Ownable} from "@openzeppelin/access/Ownable.sol";
 /// @title Standard
 /// @author 0xRatWithRevolver and THE BOYS
 /// @notice Standard for writing contracts
-contract Standard is Ownable {
+contract Standard {
     /* ======== STATE ======== */
 
     // NOTE: Values that are defined approximately (withdrawal limit, fee, etc.)
@@ -58,7 +56,7 @@ contract Standard is Ownable {
     // NOTE: most values SHOULD be assigned via constructor to not mess up deployment process
     //       if value business requirements CAN change
 
-    constructor() Ownable(msg.sender) {}
+    constructor() {}
 
     /* ======== EXTERNAL/PUBLIC ======== */
 
@@ -90,13 +88,6 @@ contract Standard is Ownable {
     }
 
     /* ======== ADMIN ======== */
-
-    /// @notice Set the number to a new value
-    /// @dev Function SHOULD be restricted
-    /// @param newNumber The new number to set
-    function adminSetNumber(uint newNumber) external onlyOwner {
-        number = newNumber;
-    }
 
     /* ======== VIEW ======== */
 
