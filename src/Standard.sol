@@ -25,16 +25,16 @@ contract Standard {
     // NOTE: Values that are defined approximately (withdrawal limit, fee, etc.)
     //       SHOULD have setters (ownable)
 
-    uint public number;
+    uint256 public number;
 
     // NOTE: Constants are only used for values that CAN'T be changed right before deployment
 
-    uint public constant CONSTANT_NUMBER = 10;
+    uint256 public constant CONSTANT_NUMBER = 10;
 
     // NOTE: Name of key/value CAN be skipped if mapping name is self-explanatory
     //       for example balances mapping
 
-    mapping(address keyName => uint valueName) public exampleMapping;
+    mapping(address keyName => uint256 valueName) public exampleMapping;
 
     /* ======== ERRORS ======== */
 
@@ -42,11 +42,11 @@ contract Standard {
 
     // NOTE: It's better to pass value to an error, than not
 
-    error NumberTooHigh(uint number);
+    error NumberTooHigh(uint256 number);
 
     /* ======== EVENTS ======== */
 
-    event NumberSet(uint newNumber);
+    event NumberSet(uint256 newNumber);
 
     // NOTE: bytes of arrays SHOULD be passed to event
     //       due to fact that EVM doesn't write full data, only hashes
@@ -67,14 +67,14 @@ contract Standard {
     /// @notice Set the number to a new value
     /// @dev Function SHOULD be restricted
     /// @param newNumber The new number to set
-    function setNumber(uint newNumber) external {
+    function setNumber(uint256 newNumber) external {
         number = newNumber;
     }
 
     /// @notice Increment the number by 1
     /// @dev Function SHOULD be restricted
     /// @return The new number
-    function increment() external returns (uint) {
+    function increment() external returns (uint256) {
         return ++number;
     }
 
@@ -83,7 +83,7 @@ contract Standard {
     /// @notice Increment the number by 1
     /// @dev Function SHOULD be restricted
     /// @return The new number
-    function _decrement() internal returns (uint) {
+    function _decrement() internal returns (uint256) {
         return --number;
     }
 
@@ -93,7 +93,7 @@ contract Standard {
 
     /// @notice Get the number
     /// @return The number
-    function getNumber() external view returns (uint) {
+    function getNumber() external view returns (uint256) {
         return number;
     }
 }

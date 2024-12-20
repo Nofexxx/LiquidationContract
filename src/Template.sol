@@ -10,7 +10,7 @@ pragma solidity ^0.8.27;
 contract Template {
     /* ======== STATE ======== */
 
-    uint public number;
+    uint256 public number;
 
     /* ======== ERRORS ======== */
 
@@ -20,7 +20,7 @@ contract Template {
 
     /* ======== EXTERNAL/PUBLIC ======== */
 
-    function setNumber(uint newNumber) external {
+    function setNumber(uint256 newNumber) external {
         number = newNumber;
     }
 
