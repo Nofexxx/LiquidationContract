@@ -5,8 +5,7 @@ import {Vm} from "forge-std/Vm.sol";
 import {console2} from "forge-std/console2.sol";
 
 contract FileUtilsState {
-    Vm internal vm =
-        Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
+    Vm internal vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
 
     string public pathToContracts = "deployments/Contracts.json";
 
@@ -15,11 +14,7 @@ contract FileUtilsState {
 
 contract FileWriteUtils is FileUtilsState {
     ///@dev Write contract address to file, rewrite if exist
-    function writeContractAddress(
-        uint32 chainId,
-        address contractAddress,
-        string memory contractName
-    ) public {
+    function writeContractAddress(uint32 chainId, address contractAddress, string memory contractName) public {
         string memory chainObjKey = string.concat(".", vm.toString(chainId));
 
         string memory json = _getOrCreateJsonFile();
@@ -54,41 +49,25 @@ contract FileWriteUtils is FileUtilsState {
         string[] memory keysOfChainObj = vm.parseJsonKeys(json, chainObjKey);
 
         for (uint256 i = 0; i < keysOfChainObj.length; i++) {
-            address addressOfContract = vm.parseJsonAddress(
-                json,
-                string.concat(chainObjKey, ".", keysOfChainObj[i])
-            );
+            address addressOfContract = vm.parseJsonAddress(json, string.concat(chainObjKey, ".", keysOfChainObj[i]));
 
-            chainObj = vm.serializeAddress(
-                chainObjKey,
-                keysOfChainObj[i],
-                addressOfContract
-            );
+            chainObj = vm.serializeAddress(chainObjKey, keysOfChainObj[i], addressOfContract);
         }
 
-        chainObj = vm.serializeAddress(
-            chainObjKey,
-            contractName,
-            contractAddress
-        );
+        chainObj = vm.serializeAddress(chainObjKey, contractName, contractAddress);
 
         vm.writeJson(chainObj, pathToContracts, chainObjKey);
     }
 
-    function _writeChainIfNotExist(
-        string memory json,
-        string memory chainObjKey,
-        uint32 chainId
-    ) internal returns (string memory newJson) {
+    function _writeChainIfNotExist(string memory json, string memory chainObjKey, uint32 chainId)
+        internal
+        returns (string memory newJson)
+    {
         bool isChainExist = vm.keyExistsJson(json, chainObjKey);
 
         if (isChainExist) return json;
 
-        string memory mainObj = vm.serializeString(
-            mainObjKey,
-            vm.toString(chainId),
-            "{}"
-        );
+        string memory mainObj = vm.serializeString(mainObjKey, vm.toString(chainId), "{}");
 
         vm.writeJson(mainObj, pathToContracts);
 
@@ -97,10 +76,7 @@ contract FileWriteUtils is FileUtilsState {
 }
 
 contract FileReadUtils is FileUtilsState {
-    function readContractAddress(
-        uint32 chainId,
-        string memory contractName
-    ) public returns (address) {
+    function readContractAddress(uint32 chainId, string memory contractName) public returns (address) {
         _checkFileExist();
 
         string memory chainObjKey = string.concat(".", vm.toString(chainId));
@@ -111,10 +87,7 @@ contract FileReadUtils is FileUtilsState {
 
         _checkContractExist(chainObjKey, contractName, file, chainId);
 
-        address contractAddress = vm.parseJsonAddress(
-            file,
-            string.concat(chainObjKey, ".", contractName)
-        );
+        address contractAddress = vm.parseJsonAddress(file, string.concat(chainObjKey, ".", contractName));
 
         return contractAddress;
     }
@@ -122,23 +95,13 @@ contract FileReadUtils is FileUtilsState {
     function _checkFileExist() internal {
         bool isFileExist = vm.exists(pathToContracts);
 
-        require(
-            isFileExist,
-            string.concat("File with path ", pathToContracts, " does not exist")
-        );
+        require(isFileExist, string.concat("File with path ", pathToContracts, " does not exist"));
     }
 
-    function _checkChainExist(
-        string memory chainObjKey,
-        string memory json,
-        uint32 chainId
-    ) internal {
+    function _checkChainExist(string memory chainObjKey, string memory json, uint32 chainId) internal {
         bool isChainExist = vm.keyExistsJson(json, chainObjKey);
 
-        require(
-            isChainExist,
-            string.concat("Chain ", vm.toString(chainId), " does not exist")
-        );
+        require(isChainExist, string.concat("Chain ", vm.toString(chainId), " does not exist"));
     }
 
     function _checkContractExist(
@@ -147,19 +110,10 @@ contract FileReadUtils is FileUtilsState {
         string memory json,
         uint32 chainId
     ) internal {
-        bool isContractExist = vm.keyExistsJson(
-            json,
-            string.concat(chainObjKey, ".", contractName)
-        );
+        bool isContractExist = vm.keyExistsJson(json, string.concat(chainObjKey, ".", contractName));
 
         require(
-            isContractExist,
-            string.concat(
-                "Contract ",
-                contractName,
-                " does not exist on chain ",
-                vm.toString(chainId)
-            )
+            isContractExist, string.concat("Contract ", contractName, " does not exist on chain ", vm.toString(chainId))
         );
     }
 }

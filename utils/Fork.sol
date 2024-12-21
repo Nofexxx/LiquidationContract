@@ -15,7 +15,7 @@ contract Fork {
 
     // Created because forkId can be 0 and cannot be used to prove fork existence
     struct ForkData {
-        uint forkId;
+        uint256 forkId;
         bool exists;
     }
 
@@ -26,7 +26,7 @@ contract Fork {
 
     function fork(uint32 chainId) public {
         ForkData memory forkData = _forkId[chainId];
-        uint forkId = forkData.forkId;
+        uint256 forkId = forkData.forkId;
 
         if (forkData.exists) {
             bool isForkActive = vm.activeFork() == forkData.forkId;
@@ -39,7 +39,7 @@ contract Fork {
 
         // Create new fork
         string memory forkAlias = forkAliases[chainId];
-        uint blockNumber = defaultForkBlockNumber[chainId];
+        uint256 blockNumber = defaultForkBlockNumber[chainId];
 
         if (blockNumber != 0) forkId = vm.createFork(forkAlias, blockNumber);
         else forkId = vm.createFork(forkAlias);

@@ -65,10 +65,7 @@ contract ChainHelpers {
     }
 
     function getEid(uint32 chainId) public view returns (uint32) {
-        require(
-            _eids[chainId] != 0,
-            string(bytes.concat("eid not found: ", bytes4(chainId)))
-        );
+        require(_eids[chainId] != 0, string(bytes.concat("eid not found: ", bytes4(chainId))));
         return _eids[chainId];
     }
 }
