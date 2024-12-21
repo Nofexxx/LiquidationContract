@@ -10,10 +10,7 @@ contract ReadWriteExample is Script {
     function run() public {
         fileUtils.writeContractAddress(1, address(0x111), "newContract");
 
-        address contractAddress = fileUtils.readContractAddress(
-            1,
-            "newContract"
-        );
+        address contractAddress = fileUtils.readContractAddress(1, "newContract");
 
         console.log("contractAddress", contractAddress);
     }
