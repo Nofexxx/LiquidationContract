@@ -3,11 +3,11 @@
 		"prettier": "npx prettier --write '**/*.json'",
 		"prepare": "npx husky",
 		"lint": "npm run lint:src && npm run lint:test",
-		"lint:fix": "npx solhint -c src/.solhint.json --fix --noPrompt src/**/*.sol src/*.sol && npx solhint -c test/.solhint.json --fix --noPrompt test/**/*.sol test/*.sol",
-		"lint:src": "npx solhint -c src/.solhint.json src/**/*.sol src/*.sol",
-		"lint:src:fix": "npx solhint -c src/.solhint.json --fix src/**/*.sol src/*.sol",
-		"lint:test": "npx solhint -c test/.solhint.json test/**/*.sol test/*.sol",
-		"lint:test:fix": "npx solhint -c test/.solhint.json --fix test/**/*.sol test/*.sol"
+		"lint:fix": "npx solhint -c src/.solhint.json --fix --noPrompt src/**/*.sol && npx solhint -c test/.solhint.json --fix --noPrompt test/**/*.sol",
+		"lint:src": "npx solhint -c src/.solhint.json src/**/*.sol",
+		"lint:src:fix": "npx solhint -c src/.solhint.json --fix src/**/*.sol",
+		"lint:test": "npx solhint -c test/.solhint.json test/**/*.sol",
+		"lint:test:fix": "npx solhint -c test/.solhint.json --fix test/**/*.sol"
 	},
 	"dependencies": {
 		"@openzeppelin/contracts": "^5.0.2"
