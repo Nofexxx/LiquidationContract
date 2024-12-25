@@ -1,0 +1,5 @@
+Mutation testing report:
+Number of mutations:    0
+Killed:                 0 / 0
+
+Mutations:

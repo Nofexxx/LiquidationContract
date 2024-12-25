@@ -2,6 +2,7 @@
 src = "src"
 out = "out"
 libs = ["lib", "node_modules"]
+ast = true
 
 evm_version = "shanghai" # simulation may be false positive on bsc (PUSH0 opcode support)
 

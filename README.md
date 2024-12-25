@@ -35,3 +35,19 @@ $ forge init --template <this-repo> <new-project-name>
 
 - public rpc in .env.example
 - configured foundry.toml
+
+### Mutations
+
+To run mutations, you need to run the following command:
+
+```shell
+sh mutations.sh
+```
+
+The result will be saved in `mutations_results` directory.
+
+To run mutations in detached mode, you can use the following command:
+
+```shell
+sh mutations.sh -d
+```
