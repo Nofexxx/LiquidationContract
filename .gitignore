@@ -25,3 +25,6 @@ playground/
 
 # Slither
 slither.db.json
+
+# Mutation Results
+mutation-results/
