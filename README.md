@@ -51,3 +51,13 @@ To run mutations in detached mode, you can use the following command:
 ```shell
 sh mutations.sh -d
 ```
+
+### Slither
+
+To run Slither, you need to run the following command:
+
+```shell
+sh slither.sh
+```
+
+This command will display security detectors one at a time. You can hide specific results, which will be stored in the `slither.db.json` file.

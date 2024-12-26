@@ -8,15 +8,15 @@ mkdir -p mutations_results
 DETACHED_FLAG=""
 while getopts "d" opt; do
   case $opt in
-    d) DETACHED_FLAG="-d" ;;
+  d) DETACHED_FLAG="-d" ;;
   esac
 done
 
 # Build and run with correct volume mount path
-docker build -t vertigo .
+docker build -t vertigo -f Dockerfile.mutations .
 docker run --platform linux/amd64 ${DETACHED_FLAG} \
-    -v "$(pwd)/mutations_results:/mutations/output" \
-    vertigo
+  -v "$(pwd)/mutations_results:/mutations/output" \
+  vertigo
 
 # Remove the image after running
 # docker stop $(docker ps -q)
