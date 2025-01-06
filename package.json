@@ -13,6 +13,7 @@
 		"@openzeppelin/contracts": "^5.0.2"
 	},
 	"devDependencies": {
+		"@0xcompose/sspec": "^1.0.4",
 		"husky": "^9.0.10",
 		"prettier": "^3.4.2",
 		"solhint": "^5.0.3"

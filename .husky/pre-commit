@@ -7,3 +7,5 @@ npm run prettier
 npm run lint:fix
 
 forge test
+
+npx sspec

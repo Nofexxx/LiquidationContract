@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import {TemplateTestSetup} from "./_Template.Setup.sol";
 
-contract TemplateExternalFunctionsTesting is TemplateTestSetup {
+contract ExternalFunction is TemplateTestSetup {
     function test_Increment() public {
         template.increment();
         assertEq(template.number(), 1);
