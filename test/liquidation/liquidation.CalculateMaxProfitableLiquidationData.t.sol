@@ -37,7 +37,7 @@ contract CalculateMostProfitableDebtTest is Test {
 		);
 	}
 
-	function test_revertIf_userZeroAddress() public {
+	function test_RevertIf_userZeroAddress() public {
 		address invalidUser = address(0);
 
 		vm.expectRevert(ILiquidationHelper.ZeroAddress.selector);
@@ -45,22 +45,20 @@ contract CalculateMostProfitableDebtTest is Test {
 	}
 
 	function test_calculateMaxProfitableLiquidationData() public {
-		ILiquidationHelper.UserDebtValue memory userDebtValue;
+		ILiquidationHelper.UserDebt memory UserDebt;
 
-		address debtAssetBefore = userDebtValue.debtAsset;
-		address collateralAssetBefore = userDebtValue.collateralAsset;
-		uint256 debtToCoverBefore = userDebtValue.debtToCover;
+		address debtAssetBefore = UserDebt.debtAsset;
+		address collateralAssetBefore = UserDebt.collateralAsset;
+		uint256 debtToCoverBefore = UserDebt.debtToCover;
 
-		userDebtValue = myLiquidation.calculateMaxProfitableLiquidationData(
-			user
-		);
+		UserDebt = myLiquidation.calculateMaxProfitableLiquidationData(user);
 
-		assert(userDebtValue.debtAsset != debtAssetBefore);
-		assert(userDebtValue.collateralAsset != collateralAssetBefore);
-		assert(userDebtValue.debtToCover > debtToCoverBefore);
+		assert(UserDebt.debtAsset != debtAssetBefore);
+		assert(UserDebt.collateralAsset != collateralAssetBefore);
+		assert(UserDebt.debtToCover > debtToCoverBefore);
 
-		assertEq(userDebtValue.debtAsset, correctDebtAsset);
-		assertEq(userDebtValue.collateralAsset, correctCollateralAsset);
-		assertEq(userDebtValue.debtToCover, correctDebtToCover);
+		assertEq(UserDebt.debtAsset, correctDebtAsset);
+		assertEq(UserDebt.collateralAsset, correctCollateralAsset);
+		assertEq(UserDebt.debtToCover, correctDebtToCover);
 	}
 }

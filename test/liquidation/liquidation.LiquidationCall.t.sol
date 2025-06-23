@@ -8,7 +8,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ILiquidationHelper} from "src/interfaces/ILiquidationHelper.sol";
 import {Liquidation} from "src/Liquidation.sol";
 
-contract verifyLiquidationCallTest is Test {
+contract liquidationCallTest is Test {
 	Liquidation public myLiquidation;
 
 	address public lendingPoolAddressProvider =
@@ -34,68 +34,64 @@ contract verifyLiquidationCallTest is Test {
 		);
 	}
 
-	function test_revertIf_collateralAssetsZeroAddress() public {
-		ILiquidationHelper.UserDebtValue memory userDebtValue = myLiquidation
+	function test_RevertIf_collateralAssetsZeroAddress() public {
+		ILiquidationHelper.UserDebt memory UserDebt = myLiquidation
 			.calculateMaxProfitableLiquidationData(user);
 
-		userDebtValue.collateralAsset = address(0);
+		UserDebt.collateralAsset = address(0);
 
 		vm.expectRevert(ILiquidationHelper.ZeroAddress.selector);
-		myLiquidation.verifyLiquidationCall(userDebtValue, receiveAToken);
+		myLiquidation.liquidationCall(UserDebt, receiveAToken);
 	}
 
-	function test_revertIf_debtAssetZeroAddress() public {
-		ILiquidationHelper.UserDebtValue memory userDebtValue = myLiquidation
+	function test_RevertIf_debtAssetZeroAddress() public {
+		ILiquidationHelper.UserDebt memory UserDebt = myLiquidation
 			.calculateMaxProfitableLiquidationData(user);
-		userDebtValue.debtAsset = address(0);
+		UserDebt.debtAsset = address(0);
 
 		vm.expectRevert(ILiquidationHelper.ZeroAddress.selector);
-		myLiquidation.verifyLiquidationCall(userDebtValue, receiveAToken);
+		myLiquidation.liquidationCall(UserDebt, receiveAToken);
 	}
 
-	function test_revertIf_userZeroAddress() public {
-		ILiquidationHelper.UserDebtValue memory userDebtValue = myLiquidation
+	function test_RevertIf_userZeroAddress() public {
+		ILiquidationHelper.UserDebt memory UserDebt = myLiquidation
 			.calculateMaxProfitableLiquidationData(user);
-		userDebtValue.user = address(0);
+		UserDebt.user = address(0);
 
 		vm.expectRevert(ILiquidationHelper.ZeroAddress.selector);
-		myLiquidation.verifyLiquidationCall(userDebtValue, receiveAToken);
+		myLiquidation.liquidationCall(UserDebt, receiveAToken);
 	}
 
-	function test_revertIf_invalidDebtToCover() public {
-		ILiquidationHelper.UserDebtValue memory userDebtValue = myLiquidation
+	function test_RevertIf_invalidDebtToCover() public {
+		ILiquidationHelper.UserDebt memory UserDebt = myLiquidation
 			.calculateMaxProfitableLiquidationData(user);
-		userDebtValue.debtToCover = 0;
+		UserDebt.debtToCover = 0;
 
 		vm.expectRevert(ILiquidationHelper.InvalidAmount.selector);
-		myLiquidation.verifyLiquidationCall(userDebtValue, receiveAToken);
+		myLiquidation.liquidationCall(UserDebt, receiveAToken);
 	}
 
-	function test_revertIf_invalidBalanceToPay() public {
-		ILiquidationHelper.UserDebtValue memory userDebtValue = myLiquidation
+	function test_RevertIf_invalidBalanceToPay() public {
+		ILiquidationHelper.UserDebt memory UserDebt = myLiquidation
 			.calculateMaxProfitableLiquidationData(user);
 
 		vm.expectRevert(ILiquidationHelper.LiquidationFailed.selector);
-		myLiquidation.verifyLiquidationCall(userDebtValue, receiveAToken);
+		myLiquidation.liquidationCall(UserDebt, receiveAToken);
 	}
 
-	function test_verifyLiquidationCallSuccessTest() public {
-		ILiquidationHelper.UserDebtValue memory userDebtValue = myLiquidation
+	function test_liquidationCallSuccessTest() public {
+		ILiquidationHelper.UserDebt memory UserDebt = myLiquidation
 			.calculateMaxProfitableLiquidationData(user);
 
-		deal(
-			userDebtValue.debtAsset,
-			address(myLiquidation),
-			userDebtValue.debtToCover
-		);
+		deal(UserDebt.debtAsset, address(myLiquidation), UserDebt.debtToCover);
 
-		uint256 balanceBefore = IERC20(userDebtValue.collateralAsset).balanceOf(
+		uint256 balanceBefore = IERC20(UserDebt.collateralAsset).balanceOf(
 			address(myLiquidation)
 		);
 
-		myLiquidation.verifyLiquidationCall(userDebtValue, receiveAToken);
+		myLiquidation.liquidationCall(UserDebt, receiveAToken);
 
-		uint256 balanceAfter = IERC20(userDebtValue.collateralAsset).balanceOf(
+		uint256 balanceAfter = IERC20(UserDebt.collateralAsset).balanceOf(
 			address(myLiquidation)
 		);
 

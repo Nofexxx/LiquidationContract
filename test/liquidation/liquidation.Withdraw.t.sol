@@ -42,7 +42,7 @@ contract WithdrawTest is Test {
 		deal(debtAsset, address(myLiquidation), amount);
 	}
 
-	function test_revertIf_debtAssetZeroAddress() public {
+	function test_RevertIf_debtAssetZeroAddress() public {
 		address invalidDebtAsset = address(0);
 
 		vm.prank(owner);
@@ -50,7 +50,7 @@ contract WithdrawTest is Test {
 		myLiquidation.withdraw(invalidDebtAsset, userToTransfer, amount);
 	}
 
-	function test_revertIf_recipientZeroAddress() public {
+	function test_RevertIf_recipientZeroAddress() public {
 		address invalidRecipient = address(0);
 
 		vm.prank(owner);
@@ -58,7 +58,7 @@ contract WithdrawTest is Test {
 		myLiquidation.withdraw(debtAsset, invalidRecipient, amount);
 	}
 
-	function test_revertIf_InsufficientBalance() public {
+	function test_RevertIf_InsufficientBalance() public {
 		uint256 invalidAmount = amount * 2;
 
 		vm.prank(owner);

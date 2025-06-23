@@ -42,14 +42,14 @@
 // 		assertEq(data.currentVariableDebt, userCurrentVariableDebt);
 // 	}
 
-// 	function test_revertIf_userZeroAddress() public {
+// 	function test_RevertIf_userZeroAddress() public {
 // 		address invalidUserAddress = address(0);
 
 // 		vm.expectRevert(ILiquidationHelper.ZeroAddress.selector);
 // 		myLiquidation.getStructUserReserveData(debtAsset, invalidUserAddress);
 // 	}
 
-// 	function test_revertIf_assetZeroAddress() public {
+// 	function test_RevertIf_assetZeroAddress() public {
 // 		address invalidAssetAddress = address(0);
 
 // 		vm.expectRevert(ILiquidationHelper.ZeroAddress.selector);

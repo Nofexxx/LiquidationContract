@@ -43,7 +43,7 @@ interface ILiquidationHelper {
 		bool usageAsCollateralEnabled;
 	}
 
-	struct UserDebtValue {
+	struct UserDebt {
 		address user;
 		address debtAsset;
 		address collateralAsset;
@@ -64,17 +64,14 @@ interface ILiquidationHelper {
 	}
 
 	//functions
-	function verifyLiquidationCall(
-		UserDebtValue memory userDataToLiquidate,
+	function liquidationCall(
+		UserDebt memory userDataToLiquidate,
 		bool receiveAToken
-	) external;
+	) external returns (bool success);
 
 	function withdraw(address token, address to, uint256 amount) external;
 
 	function calculateMaxProfitableLiquidationData(
 		address user
-	)
-		external
-		view
-		returns (ILiquidationHelper.UserDebtValue memory userDebtValue);
+	) external view returns (ILiquidationHelper.UserDebt memory UserDebt);
 }

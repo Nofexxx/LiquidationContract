@@ -37,14 +37,14 @@ contract DepositTest is Test {
 		deal(user, amount);
 	}
 
-	function test_revertIf_tokenZeroAddress() public {
+	function test_RevertIf_tokenZeroAddress() public {
 		address invalidToken = address(0);
 
 		vm.expectRevert(ILiquidationHelper.ZeroAddress.selector);
 		myLiquidation.deposit(invalidToken, amount);
 	}
 
-	function test_revertIf_amountZero() public {
+	function test_RevertIf_amountZero() public {
 		uint256 invalidAmount = 0;
 
 		vm.expectRevert(ILiquidationHelper.InvalidAmount.selector);

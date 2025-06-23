@@ -44,20 +44,20 @@ contract Liquidation is ILiquidationHelper, Ownable {
 	}
 
 	/* ======== EXTERNAL/PUBLIC ======== */
-	function verifyLiquidationCall(
-		ILiquidationHelper.UserDebtValue memory userDataToLiquidate,
+	function liquidationCall(
+		ILiquidationHelper.UserDebt memory userDataToLiquidate,
 		bool receiveAToken
-	) external {
-		if (
-			userDataToLiquidate.collateralAsset == address(0) ||
-			userDataToLiquidate.debtAsset == address(0) ||
-			userDataToLiquidate.user == address(0)
-		) revert ZeroAddress();
+	) external returns (bool success) {
+		if (userDataToLiquidate.collateralAsset == address(0))
+			revert ZeroAddress();
+		if (userDataToLiquidate.debtAsset == address(0)) revert ZeroAddress();
+		if (userDataToLiquidate.user == address(0)) revert ZeroAddress();
+
 		if (userDataToLiquidate.debtToCover == 0) revert InvalidAmount();
 
 		if (
-			IERC20(userDataToLiquidate.debtAsset).balanceOf(address(this)) <
-			userDataToLiquidate.debtToCover
+			IERC20(userDataToLiquidate.debtAsset).balanceOf(address(this)) <=
+			userDataToLiquidate.debtToCover / 2
 		) revert LiquidationFailed();
 		if (
 			IERC20(userDataToLiquidate.debtAsset).allowance(
@@ -65,13 +65,13 @@ contract Liquidation is ILiquidationHelper, Ownable {
 				address(lendingPool)
 			) < userDataToLiquidate.debtToCover
 		) {
-			IERC20(userDataToLiquidate.debtAsset).approve(
+			IERC20(userDataToLiquidate.debtAsset).forceApprove(
 				address(lendingPool),
 				type(uint256).max
 			);
 		}
 
-		if (validateUserToLiquidate(userDataToLiquidate.user)) {
+		if (_validateUser(userDataToLiquidate.user)) {
 			lendingPool.liquidationCall(
 				userDataToLiquidate.collateralAsset,
 				userDataToLiquidate.debtAsset,
@@ -79,8 +79,7 @@ contract Liquidation is ILiquidationHelper, Ownable {
 				userDataToLiquidate.debtToCover,
 				receiveAToken
 			);
-		} else {
-			revert NotValidHealthFactor();
+			success = true;
 		}
 
 		emit LiquidationCall(
@@ -118,10 +117,78 @@ contract Liquidation is ILiquidationHelper, Ownable {
 	}
 
 	/* ======== VIEW ======== */
+	//TODO need to change cycle logic, decrease amount if
+	function calculateMaxProfitableLiquidationData(
+		address user
+	) external view returns (ILiquidationHelper.UserDebt memory userDebt) {
+		if (user == address(0)) revert ZeroAddress();
+
+		uint256 maxDebt = 0;
+		uint256 maxCollateralValue = 0;
+		address debtAsset = address(0);
+		address collateralAsset = address(0);
+		uint256 debtToCover = 0;
+
+		address[] memory reserveList = lendingPool.getReservesList();
+
+		for (uint256 i = 0; i < reserveList.length; i++) {
+			address asset = reserveList[i];
+
+			uint256 collateralValue;
+			uint256 price = priceOracle.getAssetPrice(asset);
+
+			ILiquidationHelper.ProtocolReserveData
+				memory reserveData = _getStructUserReserveData(asset, user);
+
+			ILiquidationHelper.ProtocolReserveCOnfigurationData
+				memory reserveConfigurationData = _getReserveConfigurationData(
+					asset
+				);
+
+			if (
+				reserveData.currentStableDebt == 0 ||
+				reserveData.currentVariableDebt == 0
+			) {
+				uint256 currentDebt = reserveData.currentStableDebt +
+					reserveData.currentVariableDebt;
+
+				if (currentDebt > maxDebt) {
+					maxDebt = currentDebt;
+					debtAsset = asset;
+				}
+			}
+
+			if (
+				reserveData.usageAsCollateralEnabled &&
+				reserveData.currentATokenBalance > 0 &&
+				reserveConfigurationData.isActive
+			) {
+				collateralValue =
+					reserveData.currentATokenBalance *
+					price *
+					reserveConfigurationData.liquidationBonus;
+
+				if (collateralValue > maxCollateralValue) {
+					maxCollateralValue = collateralValue;
+					collateralAsset = asset;
+				}
+			}
+		}
+		if (debtAsset == address(0) || collateralAsset == address(0)) {
+			revert ZeroAddress();
+		}
+
+		userDebt = UserDebt({
+			user: user,
+			debtAsset: debtAsset,
+			collateralAsset: collateralAsset,
+			debtToCover: maxDebt / 2
+		});
+	}
 	function getStructUserAccountData(
 		address user
 	)
-		internal
+		public
 		view
 		returns (ILiquidationHelper.UserAccountData memory accountData)
 	{
@@ -146,7 +213,7 @@ contract Liquidation is ILiquidationHelper, Ownable {
 		});
 	}
 
-	function getStructUserReserveData(
+	function _getStructUserReserveData(
 		address asset,
 		address user
 	)
@@ -181,7 +248,7 @@ contract Liquidation is ILiquidationHelper, Ownable {
 		});
 	}
 
-	function getReserveConfigurationData(
+	function _getReserveConfigurationData(
 		address asset
 	)
 		internal
@@ -219,92 +286,17 @@ contract Liquidation is ILiquidationHelper, Ownable {
 			});
 	}
 
-	function calculateMaxProfitableLiquidationData(
-		address user
-	)
-		external
-		view
-		returns (ILiquidationHelper.UserDebtValue memory userDebtValue)
-	{
-		if (user == address(0)) revert ZeroAddress();
-
-		uint256 maxDebt = 0;
-		uint256 maxCollateralValue = 0;
-		address debtAsset;
-		address collateralAsset;
-		uint256 debtToCover;
-
-		address[] memory reserveList = lendingPool.getReservesList();
-
-		for (uint256 i = 0; i < reserveList.length; i++) {
-			address asset = reserveList[i];
-
-			uint256 collateralValue;
-			uint256 price = priceOracle.getAssetPrice(asset);
-
-			ILiquidationHelper.ProtocolReserveData
-				memory reserveData = getStructUserReserveData(asset, user);
-
-			ILiquidationHelper.ProtocolReserveCOnfigurationData
-				memory reserveConfigurationData = getReserveConfigurationData(
-					asset
-				);
-
-			if (
-				reserveData.currentStableDebt > 0 ||
-				reserveData.currentVariableDebt > 0
-			) {
-				uint256 currentDebt = reserveData.currentStableDebt +
-					reserveData.currentVariableDebt;
-
-				if (currentDebt > maxDebt) {
-					maxDebt = currentDebt;
-					debtAsset = asset;
-					debtToCover = maxDebt / 2;
-				}
-			}
-
-			if (
-				reserveData.usageAsCollateralEnabled &&
-				reserveData.currentATokenBalance > 0 &&
-				reserveConfigurationData.isActive
-			) {
-				collateralValue =
-					reserveData.currentATokenBalance *
-					price *
-					reserveConfigurationData.liquidationBonus;
-
-				if (collateralValue > maxCollateralValue) {
-					maxCollateralValue = collateralValue;
-					collateralAsset = asset;
-				}
-			}
-		}
-		if (debtAsset == address(0) || collateralAsset == address(0)) {
-			revert ZeroAddress();
-		}
-
-		userDebtValue = UserDebtValue({
-			user: user,
-			debtAsset: debtAsset,
-			collateralAsset: collateralAsset,
-			debtToCover: debtToCover
-		});
-	}
-
-	function validateUserToLiquidate(
-		address user
-	) internal view returns (bool isValid) {
+	function _validateUser(address user) internal view returns (bool isValid) {
 		if (user == address(0)) revert ZeroAddress();
 
 		ILiquidationHelper.UserAccountData
-			memory accountData = getStructUserAccountData(user);
+			memory userAccountData = getStructUserAccountData(user);
 
-		if (accountData.healthFactor <= 1e18) {
-			isValid = true;
-		} else {
+		if (userAccountData.healthFactor > 1e18) {
 			isValid = false;
+			return isValid;
 		}
+		isValid = true;
 
 		return isValid;
 	}
