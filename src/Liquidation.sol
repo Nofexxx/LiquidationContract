@@ -59,6 +59,9 @@ contract Liquidation is ILiquidationHelper, Ownable {
 			IERC20(userDataToLiquidate.debtAsset).balanceOf(address(this)) <=
 			userDataToLiquidate.debtToCover / 2
 		) revert LiquidationFailed();
+
+		success = false;
+
 		if (
 			IERC20(userDataToLiquidate.debtAsset).allowance(
 				address(this),
@@ -89,6 +92,8 @@ contract Liquidation is ILiquidationHelper, Ownable {
 			userDataToLiquidate.debtToCover,
 			receiveAToken
 		);
+
+		return success;
 	}
 
 	/* ======== ADMIN ======== */
@@ -117,7 +122,6 @@ contract Liquidation is ILiquidationHelper, Ownable {
 	}
 
 	/* ======== VIEW ======== */
-	//TODO need to change cycle logic, decrease amount if
 	function calculateMaxProfitableLiquidationData(
 		address user
 	) external view returns (ILiquidationHelper.UserDebt memory userDebt) {
@@ -127,52 +131,37 @@ contract Liquidation is ILiquidationHelper, Ownable {
 		uint256 maxCollateralValue = 0;
 		address debtAsset = address(0);
 		address collateralAsset = address(0);
-		uint256 debtToCover = 0;
 
 		address[] memory reserveList = lendingPool.getReservesList();
 
 		for (uint256 i = 0; i < reserveList.length; i++) {
 			address asset = reserveList[i];
 
-			uint256 collateralValue;
 			uint256 price = priceOracle.getAssetPrice(asset);
 
 			ILiquidationHelper.ProtocolReserveData
 				memory reserveData = _getStructUserReserveData(asset, user);
 
-			ILiquidationHelper.ProtocolReserveCOnfigurationData
+			ILiquidationHelper.ProtocolReserveConfigurationData
 				memory reserveConfigurationData = _getReserveConfigurationData(
 					asset
 				);
 
-			if (
-				reserveData.currentStableDebt == 0 ||
-				reserveData.currentVariableDebt == 0
-			) {
-				uint256 currentDebt = reserveData.currentStableDebt +
-					reserveData.currentVariableDebt;
+			(maxDebt, debtAsset) = _updateMaxDebt(
+				reserveData,
+				maxDebt,
+				asset,
+				debtAsset
+			);
 
-				if (currentDebt > maxDebt) {
-					maxDebt = currentDebt;
-					debtAsset = asset;
-				}
-			}
-
-			if (
-				reserveData.usageAsCollateralEnabled &&
-				reserveData.currentATokenBalance > 0 &&
-				reserveConfigurationData.isActive
-			) {
-				collateralValue =
-					reserveData.currentATokenBalance *
-					price *
-					reserveConfigurationData.liquidationBonus;
-
-				if (collateralValue > maxCollateralValue) {
-					maxCollateralValue = collateralValue;
-					collateralAsset = asset;
-				}
-			}
+			(maxCollateralValue, collateralAsset) = _updateMaxCollateral(
+				reserveData,
+				reserveConfigurationData,
+				maxCollateralValue,
+				price,
+				asset,
+				collateralAsset
+			);
 		}
 		if (debtAsset == address(0) || collateralAsset == address(0)) {
 			revert ZeroAddress();
@@ -185,6 +174,7 @@ contract Liquidation is ILiquidationHelper, Ownable {
 			debtToCover: maxDebt / 2
 		});
 	}
+
 	function getStructUserAccountData(
 		address user
 	)
@@ -213,6 +203,60 @@ contract Liquidation is ILiquidationHelper, Ownable {
 		});
 	}
 
+	function _updateMaxDebt(
+		ILiquidationHelper.ProtocolReserveData memory reserveData,
+		uint256 currentMaxDebt,
+		address currentDebtAsset,
+		address debtAsset
+	) internal pure returns (uint256 newMaxDebt, address newDebtAsset) {
+		if (
+			reserveData.currentStableDebt == 0 &&
+			reserveData.currentVariableDebt == 0
+		) return (currentMaxDebt, debtAsset);
+
+		uint256 currentDebt = reserveData.currentStableDebt +
+			reserveData.currentVariableDebt;
+
+		if (currentDebt > currentMaxDebt) {
+			newMaxDebt = currentDebt;
+			newDebtAsset = currentDebtAsset;
+
+			return (newMaxDebt, newDebtAsset);
+		}
+		return (currentMaxDebt, debtAsset);
+	}
+
+	function _updateMaxCollateral(
+		ILiquidationHelper.ProtocolReserveData memory reserveData,
+		ILiquidationHelper.ProtocolReserveConfigurationData
+			memory reserveConfigurationData,
+		uint256 currentMaxCollateralValue,
+		uint256 price,
+		address currentCollateral,
+		address collateralAsset
+	)
+		internal
+		pure
+		returns (uint256 newMaxCollateralValue, address newMaxCollateral)
+	{
+		if (
+			!reserveData.usageAsCollateralEnabled &&
+			reserveData.currentATokenBalance == 0 &&
+			reserveConfigurationData.isFrozen
+		) return (currentMaxCollateralValue, collateralAsset);
+
+		uint256 collateralValue = reserveData.currentATokenBalance *
+			price *
+			reserveConfigurationData.liquidationBonus;
+
+		if (collateralValue > currentMaxCollateralValue) {
+			newMaxCollateralValue = collateralValue;
+			newMaxCollateral = currentCollateral;
+
+			return (newMaxCollateralValue, newMaxCollateral);
+		}
+		return (currentMaxCollateralValue, collateralAsset);
+	}
 	function _getStructUserReserveData(
 		address asset,
 		address user
@@ -254,7 +298,7 @@ contract Liquidation is ILiquidationHelper, Ownable {
 		internal
 		view
 		returns (
-			ILiquidationHelper.ProtocolReserveCOnfigurationData
+			ILiquidationHelper.ProtocolReserveConfigurationData
 				memory configurationData
 		)
 	{
@@ -272,7 +316,7 @@ contract Liquidation is ILiquidationHelper, Ownable {
 		) = dataProvider.getReserveConfigurationData(asset);
 
 		configurationData = ILiquidationHelper
-			.ProtocolReserveCOnfigurationData({
+			.ProtocolReserveConfigurationData({
 				decimals: decimals,
 				ltv: ltv,
 				liquidationThreshold: liquidationThreshold,

@@ -24,6 +24,9 @@ contract DeploySwap is Script {
 
 		vm.stopBroadcast();
 
-		require(address(liquidator) != address(0), "Deployment failed");
+		require(
+			address(liquidator) != address(0),
+			"Deployment liquidator failed"
+		);
 	}
 }

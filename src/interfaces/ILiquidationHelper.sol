@@ -50,7 +50,7 @@ interface ILiquidationHelper {
 		uint256 debtToCover;
 	}
 
-	struct ProtocolReserveCOnfigurationData {
+	struct ProtocolReserveConfigurationData {
 		uint256 decimals;
 		uint256 ltv;
 		uint256 liquidationThreshold;
